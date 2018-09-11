@@ -6,6 +6,7 @@ use App\DailyAdditional;
 use App\Models\DayMenu;
 use App\Models\Meal;
 use App\Models\WeekPlan;
+use App\Plan;
 use Faker\Provider\cs_CZ\DateTime;
 use Hash;
 use Illuminate\Http\Request;
@@ -277,9 +278,19 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
         $isGrace = false;
+
+        $plans = Plan::where('is_discount', false)
+            ->orderBy('month')
+            ->get();
+        $selectedPlan =  $plans->last()->id;
+
+
         if ($user->subscription('main') && $user->subscription('main')->onGracePeriod()) {
             $isGrace = true;
         }
+        $plans = Plan::where('is_discount', false)
+            ->orderBy('month')
+            ->get();
 
         $subscription = null;
         try {
@@ -291,6 +302,8 @@ class ProfileController extends Controller
         return view('profile.account_settings', array(
             'subscription' => $subscription,
             'user' => $user,
+            'selectedPlan'=>$selectedPlan,
+            'thehotmealPlans' => $plans,
             'isGrace' => $isGrace));
     }
 
@@ -360,13 +373,23 @@ class ProfileController extends Controller
         return redirect()->back();
     }
 
-    public function resumeSubscription()
+    public function resumeSubscription(Request $request)
     {
+        $input = $request->all();
+        $plan = Plan::findOrFail($input['plan']);
+        $couponCode = $input['coupon'];
+
+
         $user = Auth::user();
         try {
-            if ($user->subscription('main')->onGracePeriod()) {
-                $subscription = $user->subscription('main');
-                $subscription->resume();
+            if ($user->subscription('main')->ends_at) {
+                $subscription = $user
+                    ->newSubscription('main', $plan->stripe_plan)
+                    ->withCoupon($couponCode);
+                $subscription->create($request->stripeToken);
+                session()->flash('message', 'You have successfully renewed your subscription');
+
+
             }
         } catch (\Exception $exception) {
             \Log::error($exception);

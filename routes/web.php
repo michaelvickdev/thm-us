@@ -74,7 +74,7 @@ Route::group(['prefix' => 'intapi'], function() {
     Route::post('mark-meal-as-favorite/{meal}', 'ProfileController@markMealAsFavorite');
     Route::post('ban-meal/{meal}', 'ProfileController@banMeal');
     Route::get('cancel-subscription', 'ProfileController@cancelSubscription');
-    Route::get('resume-subscription', 'ProfileController@resumeSubscription');
+    Route::post('/resume-subscription', 'ProfileController@resumeSubscription');
 });
 
 
