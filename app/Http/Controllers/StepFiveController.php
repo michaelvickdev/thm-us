@@ -13,7 +13,7 @@ class StepFiveController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('guest');
+//        $this->middleware('guest');
         Stripe::setApiKey(config('services.stripe.secret'));
     }
 
@@ -36,6 +36,7 @@ class StepFiveController extends Controller
 
     public function validateCoupon(Request $request)
     {
+
 
         $code = $request->input('coupon-code');
 
