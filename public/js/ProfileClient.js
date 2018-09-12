@@ -29625,7 +29625,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 var ApiUtil = __webpack_require__(3);
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-    props: ['meal', 'isUser'],
+    props: ['meal', 'isUser', 'dayMenu', 'dayOfWeek', 'isUser', 'weekPlanId', 'caloryGoal'],
 
     methods: {
         toggleFavorite: function toggleFavorite(index) {
@@ -29637,11 +29637,17 @@ var ApiUtil = __webpack_require__(3);
         },
 
         toggleBanned: function toggleBanned(index) {
+            var formData = new FormData();
+            //
+            formData.append('mealType', this.$parent.dayMenu.name);
+            formData.append('weekPlanId', this.$parent.weekPlanId);
+            formData.append('day', this.$parent.dayOfWeek);
+
             //this.meal.banned = !this.meal.banned;
             var url = '/intapi/ban-meal/' + index;
             var _this = this;
             if (confirm('Are you sure you want to ban this meal?')) {
-                ApiUtil.postToApi(url).then(function (data) {
+                ApiUtil.postToApi(url, formData).then(function (data) {
                     _this.$el.remove();
                 });
             }
@@ -30290,6 +30296,7 @@ var timeOfDay = __webpack_require__(137);
   },
   mounted: function mounted() {
     this.getMeals();
+    if (localStorage.getItem("currentDayView") !== null) this.goToDayView(localStorage.getItem("currentDayView"));
   },
 
   methods: {
@@ -30309,6 +30316,8 @@ var timeOfDay = __webpack_require__(137);
       });
     },
     goToDayView: function goToDayView(value) {
+      localStorage.setItem("currentDayView", value);
+
       this.dayOfWeek = value;
       //console.log(this.dayMenus[this.dayOfWeek].totalcalories);
       this.totalCalories = this.dayMenus[this.dayOfWeek].totalcalories;
