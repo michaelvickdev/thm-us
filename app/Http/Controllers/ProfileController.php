@@ -59,6 +59,7 @@ class ProfileController extends Controller
         if ($weekPlan->user_id !== $user->id) {
             return response('Unauthorized', 401);
         }
+
         return view('profile.day_view', array(
             'user' => $user,
             'date' => $date));
@@ -160,6 +161,59 @@ class ProfileController extends Controller
 
     }
 
+    public function generateNewMealForDay(Request $request){
+        $dayOfWeek = $request->input('day');
+        $dayMenuName = $request->input('mealType');
+        $weekPlanId = $request->input('weekPlanId');
+        $weekPlan = WeekPlan::find($weekPlanId);
+        if (!in_array($dayMenuName, Meal::$types)) {
+            return response('Bad request', 400);
+        }
+        #$alreadyAte = DailyAdditional::where('week_plan_id', $weekPlanId)->where('day', $dayOfWeek)->first();
+        $bannedMealIds = \Auth::user()->bannedMeals->pluck('id')->toArray();
+        $otherMeals = DayMenu::where('week_plan_id', $weekPlanId)
+            ->where('day', $dayOfWeek)
+            ->where('time_of_day', '=', $dayMenuName)
+            ->whereNotIn('meal_id', $bannedMealIds)
+            ->select('meal_id')->get()->pluck('meal_id')->toArray();
+
+        //Goal Calories :
+        $calorieGoal = ($weekPlan->calory_goal);
+
+        switch ($dayMenuName) {
+            case "Breakfast":
+                $maxCalories = $calorieGoal*0.2;
+                break;
+            case "Lunch":
+                $maxCalories = $calorieGoal* 0.3;
+            case "Dinner":
+                $maxCalories = $calorieGoal* 0.3;
+            case "Snacks":
+                $maxCalories = $calorieGoal* 0.2;
+
+        }
+
+
+        list($meals, $mealCalories, $ignoredMealIds) = Meal::getMealsForTimeOfDay($maxCalories + 5, $otherMeals, Meal::$indexes[$dayMenuName]);
+        \Log::info('regen - current cal is ' . $mealCalories . ' - min is - ' . $maxCalories);
+
+        $triedTimes = 0;
+        while ($mealCalories < $maxCalories && $triedTimes <= 10) {
+            list($meals, $mealCalories, $ignoredMealIds) = Meal::getMealsForTimeOfDay($maxCalories + 5, $otherMeals, Meal::$indexes[$dayMenuName]);
+            $triedTimes++;
+            \Log::info($triedTimes . ' attempt - regen current cal is ' . $mealCalories . ' - min is - ' . $maxCalories);
+        }
+        $dayMenus = DayMenu::where('day', $dayOfWeek)->where('time_of_day', $dayMenuName)->where('week_plan_id', $weekPlanId)->delete();
+        foreach ($meals as $meal) {
+            DayMenu::create([
+                'week_plan_id' => $weekPlanId,
+                'meal_id' => $meal['id'],
+                'day' => $dayOfWeek,
+                'time_of_day' => $dayMenuName
+            ]);
+        }
+    }
+
     //regenerate meals for logged in users
     public function getNewMeals(Request $request)
     {
@@ -178,7 +232,22 @@ class ProfileController extends Controller
             ->whereNotIn('meal_id', $bannedMealIds)
             ->select('meal_id')->get()->pluck('meal_id')->toArray();
 
-        $maxCalories = Meal::whereIn('id', $otherMeals)->sum('calories');
+        //Goal Calories :
+        $calorieGoal = ($weekPlan->calory_goal);
+
+        switch ($dayMenuName) {
+            case "Breakfast":
+                $maxCalories = $calorieGoal*0.2;
+                break;
+            case "Lunch":
+                $maxCalories = $calorieGoal* 0.3;
+            case "Dinner":
+                $maxCalories = $calorieGoal* 0.3;
+            case "Snacks":
+                $maxCalories = $calorieGoal* 0.2;
+
+        }
+
 
         list($meals, $mealCalories, $ignoredMealIds) = Meal::getMealsForTimeOfDay($maxCalories + 5, $otherMeals, Meal::$indexes[$dayMenuName]);
         \Log::info('regen - current cal is ' . $mealCalories . ' - min is - ' . $maxCalories);
@@ -358,9 +427,14 @@ class ProfileController extends Controller
         return response()->json(['message' => 'OK!'], 200);
     }
 
-    public function banMeal($id)
+    public function banMeal($id,Request $request)
     {
+
         Auth::user()->bannedMeals()->toggle($id);
+
+        $this->generateNewMealForDay($request);
+
+
         return response()->json(['message' => 'OK!'], 200);
     }
 
