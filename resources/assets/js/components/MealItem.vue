@@ -87,6 +87,11 @@
         props: [
             'meal',
             'isUser',
+            'dayMenu',
+            'dayOfWeek',
+            'isUser',
+            'weekPlanId',
+            'caloryGoal'
         ],
 
         methods: {
@@ -98,11 +103,17 @@
                 });
             },
             toggleBanned: function toggleBanned(index) {
+                let formData = new FormData();
+//
+                formData.append('mealType', this.$parent.dayMenu.name);
+                formData.append('weekPlanId', this.$parent.weekPlanId);
+                formData.append('day', this.$parent.dayOfWeek);
+
                 //this.meal.banned = !this.meal.banned;
                 var url = '/intapi/ban-meal/' + index;
                 var _this = this;
                 if(confirm('Are you sure you want to ban this meal?')) {
-                  ApiUtil.postToApi(url).then(function (data) {
+                  ApiUtil.postToApi(url,formData).then(function (data) {
                     _this.$el.remove();
                   });
                 }

@@ -119,6 +119,8 @@
     },
     mounted() {
       this.getMeals();
+      if(localStorage.getItem("currentDayView") !== null)
+      this.goToDayView(localStorage.getItem("currentDayView"))
     },
     methods: {
       getMeals() {
@@ -135,6 +137,9 @@
         });
       },
       goToDayView(value) {
+          localStorage.setItem("currentDayView", value);
+
+
         this.dayOfWeek = value;
         //console.log(this.dayMenus[this.dayOfWeek].totalcalories);
         this.totalCalories = this.dayMenus[this.dayOfWeek].totalcalories;
