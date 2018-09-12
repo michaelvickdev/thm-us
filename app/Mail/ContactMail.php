@@ -29,7 +29,7 @@ class ContactMail extends Mailable
      */
     public function build()
     {
-        return $this->markdown('emails.contact')->from('hello@thehotmeal.com','The Hot Meal')
+        return $this->markdown('emails.contact')->from('donotreply@thehotmeal.com','The Hot Meal')
             ->subject('Contact Form Submission')->with($this->data);
     }
 }
