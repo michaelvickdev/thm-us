@@ -114,8 +114,13 @@
                 var _this = this;
                 if(confirm('Are you sure you want to ban this meal?')) {
                   ApiUtil.postToApi(url,formData).then(function (data) {
+                      console.log(data);
                     _this.$el.remove();
-                  });
+                  }).catch(function(error){
+                      alert(error);
+
+                  })
+
                 }
             },
             mealCompleted(mealId) {
