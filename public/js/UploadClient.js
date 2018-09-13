@@ -411,15 +411,24 @@ var putToApi = function putToApi(url, params) {
     });
 };
 var postToApi = function postToApi(url, data) {
-    return new Promise(function (resolve) {
+    return new Promise(function (resolve, reject) {
         fetch("" + url, {
             method: 'post',
             body: data,
             credentials: 'same-origin'
-        }).then(function (result) {
-            return result.json();
         }).then(function (response) {
-            return resolve(response);
+            if (!response.ok) {
+                reject(response.headers.get('statustext'));
+                throw Error(response.headers.get('statustext'));
+            }
+            resolve(response);
+            return response;
+        }).then(function (response) {
+            resolve(response);
+        }).catch(function (error) {
+            console.log(error);
+
+            reject(error);
         });
     });
 };
