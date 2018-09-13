@@ -427,11 +427,21 @@ class ProfileController extends Controller
         return response()->json(['message' => 'OK!'], 200);
     }
 
+
     public function banMeal($id,Request $request)
     {
 
+
+       //Limit to 10 banned foods && Action is ban
+        if(Auth::user()->bannedMeals()->count()>10 && !Auth::user()->bannedMeals->contains($id)){
+
+            return response()->json([])->setStatusCode(400)->withHeaders(['statustext'=>"You cannot have more than 10 banned food items"]);
+
+        }
+
         Auth::user()->bannedMeals()->toggle($id);
 
+        //Regenerate food for the day
         $this->generateNewMealForDay($request);
 
 
@@ -442,6 +452,7 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
         if (!$user->subscription('main')->onGracePeriod()) {
+
             $user->subscription('main')->cancel();
         }
         return redirect()->back();
