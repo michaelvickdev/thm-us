@@ -30338,6 +30338,7 @@ var timeOfDay = __webpack_require__(137);
       this.showExercise = false;
     },
     updateCalories: function updateCalories($event) {
+      console.log($event);
       if ($event.meal_completed == true) {
         this.totalCalories += $event.meal.calories;
       } else {

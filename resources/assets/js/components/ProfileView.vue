@@ -150,6 +150,7 @@
 
       },
       updateCalories($event) {
+          console.log($event)
         if ($event.meal_completed == true) {
           this.totalCalories += $event.meal.calories;
         } else {
