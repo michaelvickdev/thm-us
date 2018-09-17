@@ -701,10 +701,9 @@ var postToApi = function postToApi(url, data) {
                 reject(response.headers.get('statustext'));
                 throw Error(response.headers.get('statustext'));
             }
-            resolve(response);
+
+            resolve(response.json());
             return response;
-        }).then(function (response) {
-            resolve(response);
         }).catch(function (error) {
             console.log(error);
 
