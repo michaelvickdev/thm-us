@@ -83,7 +83,7 @@
                         There is no active subscription on our database.
                         Please contact with support team. #9000
                     @else
-                        @if($user->subscription('main')->ends_at)
+                        @if(isset($user->subscription('main')->ends_at) && $user->subscription('main')->ends_at)
                             Your subscription has been cancelled and will be ended at
                             <strong>{{($user->subscription('main')->ends_at)->format('d M Y')}}</strong>
                             . You won't be charged for next cycle. <br/>
@@ -133,7 +133,7 @@
                 </div>
 
                 {{--Renew Subscription--}}
-                @if($user->subscription('main')->ends_at)
+                @if(isset($user->subscription('main')->ends_at) && $user->subscription('main')->ends_at)
                     <div class="col-lg-6" style="font-size:16px">
                         <h2>Renew Subscription</h2>
                         <form class="form-horizontal" id="renewForm" method="POST"  action="/intapi/resume-subscription">

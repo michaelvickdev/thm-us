@@ -351,8 +351,14 @@ class ProfileController extends Controller
         $plans = Plan::where('is_discount', false)
             ->orderBy('month')
             ->get();
-        $selectedPlan =  $plans->last()->id;
 
+        if(count($plans)!=0){
+            $selectedPlan =  $plans->last()->id;
+        }
+        else
+        {
+            $selectedPlan = 0;
+        }
 
         if ($user->subscription('main') && $user->subscription('main')->onGracePeriod()) {
             $isGrace = true;

@@ -37,7 +37,7 @@ class HomeController extends Controller
             'plans' => $plans
         ]);
     }
-    
+
     public function contact(Request $request) {
         $validator = \Validator::make($request->all(), [
         	'firstname' => 'required',
