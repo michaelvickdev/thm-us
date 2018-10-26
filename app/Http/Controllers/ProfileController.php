@@ -351,7 +351,7 @@ class ProfileController extends Controller
         $plans = Plan::where('is_discount', false)
             ->orderBy('month')
             ->get();
-
+        // dd($plans);
         if(count($plans)!=0){
             $selectedPlan =  $plans->last()->id;
         }
